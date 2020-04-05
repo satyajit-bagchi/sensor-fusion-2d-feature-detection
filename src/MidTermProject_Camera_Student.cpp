@@ -46,16 +46,19 @@ int main(int argc, const char* argv[]) {
     /* MAIN LOOP OVER ALL IMAGES */
     std::vector<double> numDetectedKeypoints;
     auto totalMatches = 0;
-
+    double t = static_cast<double>(cv::getTickCount());
     // string detectorType = "SHITOMASI";
     std::vector<string> detectorTypes{"SHITOMASI", "HARRIS", "FAST", "BRISK",
                                       "ORB",       "AKAZE",  "SIFT"};
     std::vector<string> descriptorTypes{"BRIEF", "ORB", "FREAK", "AKAZE",
                                         "SIFT"};
+    auto totalTime = 0.0;
     for (auto& detectorType : detectorTypes) {
         for (auto& descriptorType : descriptorTypes) {
             numDetectedKeypoints.clear();
             totalMatches = 0;
+            totalTime = 0;
+
             std::cout << "DETECTOR: " << detectorType << " ,"
                       << "DESCRIPTOR: " << descriptorType << "; ";
 
@@ -102,7 +105,7 @@ int main(int argc, const char* argv[]) {
                 /// matching2D.cpp and enable string-based selection based on
                 /// detectorType
                 //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
-
+                t = static_cast<double>(cv::getTickCount());
                 if (detectorType.compare("SHITOMASI") == 0) {
                     detKeypointsShiTomasi(keypoints, imgGray, false);
                 } else if (detectorType.compare("HARRIS") == 0) {
@@ -203,7 +206,8 @@ int main(int argc, const char* argv[]) {
                                      (dataBuffer.end() - 1)->descriptors,
                                      matches, descriptorType, matcherType,
                                      selectorType);
-
+                    t = (static_cast<double>(cv::getTickCount()) - t) /
+                        cv::getTickFrequency();
                     // std::cout << "Matched descriptors" << std::endl;
                     totalMatches += matches.size();
                     //// EOF STUDENT ASSIGNMENT
@@ -239,14 +243,18 @@ int main(int argc, const char* argv[]) {
                 }
 
             }  // eof loop over all images
+            totalTime += t;
             // std::cout << "KP distribution: {";
             // for (auto kp : numDetectedKeypoints) {
             //     std::cout << kp << ",";
             // }
             // std::cout << "}" << std::endl;
 
-            std::cout << "Num matches: " << totalMatches << std::endl;
+            std::cout << "Num matches: " << totalMatches << "; ";
+            std::cout << "Time taken in ms: " << totalTime * 1000 << std::endl;
+
         }  // EOL descriptor types
-    }      // EOL detectorTypes
+        std::cout << std::endl << std::endl;
+    }  // EOL detectorTypes
     return 0;
 }
